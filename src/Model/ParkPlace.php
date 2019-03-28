@@ -69,12 +69,29 @@ class ParkPlace implements CrudInterface
 
     public function update(int $id, array $fieldValues): bool
     {
-        // TODO: Implement update() method.
+        $connection = DBConnection::getConnection();
+        $stmt = $connection->prepare('
+          UPDATE parkplace SET type= :type, number = :number, occupied = :occupied  WHERE id = :id)
+        ');
+
+        $stmt->bindParam('id',$id);
+
+        foreach (['type', 'number', 'occupied'] as $placeholder) {
+            if (!isset($fieldValues[$placeholder])) {
+                $stmt->bindParam($placeholder, $this->{$placeholder});
+                continue;
+            }
+            $stmt->bindParam($placeholder, $fieldValues[$placeholder]);
+        }
+
+        return $stmt->execute();
     }
 
     public function delete(int $id): bool
     {
-        // TODO: Implement delete() method.
+        $connection = DBConnection::getConnection();
+        $stmt = $connection->prepare('DELETE FROM parkplace WHERE id = :id');
+        return $stmt->execute (['id' => $id]);
     }
 
     /**
