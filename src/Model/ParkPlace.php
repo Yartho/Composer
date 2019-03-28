@@ -15,12 +15,42 @@ class ParkPlace implements Crudinterface
 
 public function create(array $fieldValues): int
 {
-    // TODO: Implement create() method.
+
+
+    $connection = DBConnection::getConnection();
+    $stmt = $connection->prepare(
+        'INSERT INTO parkplace SET type = :type, number = :number, occupied= :occupied');
+
+    foreach (['type', 'number', 'occupied'] as $placeholder){
+
+        if (!isset($fieldValues[$placeholder])){
+            $stmt->bindParam($placeholder,$fieldValues[$placeholder]);
+        }
+        $stmt ->bindParam($placeholder, $fieldValues[$placeholder]);
+    }
+    if(!$stmt->execute()){
+        throw new \LogicException($stmt->errorInfo()[2]);
+    }
+
+    return $connection->lastInsertId();
+
+
 }
 
 public static function read(int $id)
 {
-    // TODO: Implement read() method.
+    $connection = DBConnection::getConnection();
+
+    $stmt =$connection ->prepare('SELECT * FROM parkplace where id = :id');
+    $stmt->bindParam( 'id', $id);
+
+    if (! $stmt ->execute()){
+        throw new \LogicException($stmt->errorInfo()[2]);
+    }
+
+    return $stmt->fetch(\PDO::FETCH_CLASS, static::class);
+
+
 }
 
 public static function findAll(): array
@@ -33,8 +63,9 @@ public static function findAll(): array
         throw new \LogicException($stmt->errorInfo()[2]);
     }
 
-    $results= $stmt->fetchAll();
-    
+    return $stmt->fetchAll(\PDO::FETCH_CLASS, static::class);
+
+
 }
 
 public function update(int $id, array $fieldValues): bool
